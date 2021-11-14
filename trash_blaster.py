@@ -1,4 +1,11 @@
-import pygame, math, time, random, copy, multiprocessing, sys, json
+import pygame
+import math
+import time
+import random
+import copy
+import multiprocessing
+import sys
+import json
 import numpy as np
 from pygame.locals import *
 
@@ -16,7 +23,8 @@ class PlayerBlaster:
         self.rotation = 0.0
         self.radius = 2.0
         self.scale = 0.5
-        self.drawTexture = pygame.transform.rotozoom(self.blaster_img, self.rotation, self.scale)
+        self.drawTexture = pygame.transform.rotozoom(
+            self.blaster_img, self.rotation, self.scale)
         self.moveDirection = moveDirection
         self.moveSpeed = 500
         self.passedTime = 0.0
@@ -39,14 +47,17 @@ class PlayerBlaster:
         self.passedTime += dt
 
         # If the bullet has not hit anything after some time, remove it.
-        if self.passedTime >= self.lifeTime: self.destroy()
+        if self.passedTime >= self.lifeTime:
+            self.destroy()
 
     def render(self, surface: pygame.Surface):
         """
         Draw the blast image at the new location
         """
-        self.drawTexture = pygame.transform.rotozoom(self.blaster_img, self.rotation, self.scale)
-        surface.blit(self.drawTexture, self.position - pygame.Vector2(self.drawTexture.get_rect().size) / 2.0)
+        self.drawTexture = pygame.transform.rotozoom(
+            self.blaster_img, self.rotation, self.scale)
+        surface.blit(self.drawTexture, self.position -
+                     pygame.Vector2(self.drawTexture.get_rect().size) / 2.0)
 
     def destroy(self):
         """
@@ -66,14 +77,16 @@ class JohnGreenBot:
         """
         Create a new JohnGreenBot object, add it to the game.
         """
-        self.john_green_bot_img = pygame.image.load('./assets/john_green_bot.png')
+        self.john_green_bot_img = pygame.image.load(
+            './assets/john_green_bot.png')
 
         self.game = game
         self.position = pygame.Vector2(400, 400)
         self.rotation = 45.0
         self.radius = 18.0
         self.scale = 0.5
-        self.drawTexture = pygame.transform.rotozoom(self.john_green_bot_img, self.rotation, self.scale)
+        self.drawTexture = pygame.transform.rotozoom(
+            self.john_green_bot_img, self.rotation, self.scale)
         self.moveDirection = pygame.Vector2(0, 0)
         self.moveSpeed = 100
         self.is_blasting = False
@@ -103,8 +116,10 @@ class JohnGreenBot:
 
         # If blasting
         self.shootAccum = 0
-        shootDirection = pygame.Vector2(-math.cos(math.radians(self.rotation)), math.sin(math.radians(self.rotation)))
-        blaster = PlayerBlaster(self.game, self.position + shootDirection * self.radius, shootDirection)
+        shootDirection = pygame.Vector2(-math.cos(math.radians(
+            self.rotation)), math.sin(math.radians(self.rotation)))
+        blaster = PlayerBlaster(
+            self.game, self.position + shootDirection * self.radius, shootDirection)
 
         # Record blast in the game state
         self.game.blasts += 1
@@ -114,8 +129,10 @@ class JohnGreenBot:
         """
         Draw John Green Bot at the new location
         """
-        self.drawTexture = pygame.transform.rotozoom(self.john_green_bot_img, self.rotation, self.scale)
-        surface.blit(self.drawTexture, self.position - pygame.Vector2(self.drawTexture.get_rect().size) / 2.0)
+        self.drawTexture = pygame.transform.rotozoom(
+            self.john_green_bot_img, self.rotation, self.scale)
+        surface.blit(self.drawTexture, self.position -
+                     pygame.Vector2(self.drawTexture.get_rect().size) / 2.0)
 
     def get_hit(self):
         """
@@ -151,74 +168,80 @@ class Scoreboard:
         Print the score at the top of the game.
         """
         text = str(round(self.game.score, 2)).rjust(6)
-        displayFont = pygame.font.Font(pygame.font.match_font("Consolas,Lucida Console,Mono,Monospace,Sans"), 20)
+        displayFont = pygame.font.Font(pygame.font.match_font(
+            "Consolas,Lucida Console,Mono,Monospace,Sans"), 20)
         textImage = displayFont.render(text, True, (255, 255, 255))
         surface.blit(textImage, pygame.Vector2(0, 0))
 
 
 class Trash:
-  def __init__(self, game, position:pygame.Vector2, moveDirection:pygame.Vector2, size):
-    """
-    Create trash object. Add it to the game with position and direction Give
-    it random speed.
-    """
-    self.trash_img = pygame.image.load('./assets/trash.png')
-    self.game = game
-    self.size = size
-    self.position = position
-    self.rotation = 0.0
-    self.radius = 18.0 * 1.3**size
-    self.scale = 0.20 * 1.3**size
-    self.drawTexture = pygame.transform.rotozoom(self.trash_img, self.rotation, self.scale)
-    self.moveDirection = moveDirection
-    self.moveSpeed = 150 * 0.9**size * random.uniform(0.75, 1.0)
-    self.game.add_trash(self)
+    def __init__(self, game, position: pygame.Vector2, moveDirection: pygame.Vector2, size):
+        """
+        Create trash object. Add it to the game with position and direction Give
+        it random speed.
+        """
+        self.trash_img = pygame.image.load('./assets/trash.png')
+        self.game = game
+        self.size = size
+        self.position = position
+        self.rotation = 0.0
+        self.radius = 18.0 * 1.3**size
+        self.scale = 0.20 * 1.3**size
+        self.drawTexture = pygame.transform.rotozoom(
+            self.trash_img, self.rotation, self.scale)
+        self.moveDirection = moveDirection
+        self.moveSpeed = 150 * 0.9**size * random.uniform(0.75, 1.0)
+        self.game.add_trash(self)
 
-  def update(self, dt):
-    """
-    Move the trash
-    """
-    if self.moveDirection.length_squared() != 0:
-        self.moveDirection.scale_to_length(self.moveSpeed)
-    self.position += self.moveDirection * dt
+    def update(self, dt):
+        """
+        Move the trash
+        """
+        if self.moveDirection.length_squared() != 0:
+            self.moveDirection.scale_to_length(self.moveSpeed)
+        self.position += self.moveDirection * dt
 
-    # Make sure that trash behaves toroidally.
-    TrashBlaster.wrap_coords(self.position)
+        # Make sure that trash behaves toroidally.
+        TrashBlaster.wrap_coords(self.position)
 
-  def render(self, surface:pygame.Surface):
-    """
-    Draw the trash
-    """
-    self.drawTexture = pygame.transform.rotozoom(self.trash_img, self.rotation, self.scale)
-    surface.blit(self.drawTexture, self.position - pygame.Vector2(self.drawTexture.get_rect().size) / 2.0)
+    def render(self, surface: pygame.Surface):
+        """
+        Draw the trash
+        """
+        self.drawTexture = pygame.transform.rotozoom(
+            self.trash_img, self.rotation, self.scale)
+        surface.blit(self.drawTexture, self.position -
+                     pygame.Vector2(self.drawTexture.get_rect().size) / 2.0)
 
-  def destroy(self):
-    """
-    Remove the trash
-    """
-    self.game.remove_trash(self)
+    def destroy(self):
+        """
+        Remove the trash
+        """
+        self.game.remove_trash(self)
 
-  def split(self):
-    """
-    Split the trash into two pieces
-    """
-    rotateAmount = random.uniform(5, 15)
+    def split(self):
+        """
+        Split the trash into two pieces
+        """
+        rotateAmount = random.uniform(5, 15)
 
-    # Create two new pieces of trash with slightly smaller size
-    Trash(self.game, copy.copy(self.position), self.moveDirection.rotate(rotateAmount), self.size - 1)
-    Trash(self.game, copy.copy(self.position), self.moveDirection.rotate(-rotateAmount), self.size - 1)
+        # Create two new pieces of trash with slightly smaller size
+        Trash(self.game, copy.copy(self.position),
+              self.moveDirection.rotate(rotateAmount), self.size - 1)
+        Trash(self.game, copy.copy(self.position),
+              self.moveDirection.rotate(-rotateAmount), self.size - 1)
 
-    # Remove the original trash
-    self.destroy()
+        # Remove the original trash
+        self.destroy()
 
-  def get_hit(self):
-    """
-    What to do if the trash gets hit by the blaster
-    """
-    self.game.hits += 1
-    if self.size >= 2:
-        self.split()
-    self.destroy()
+    def get_hit(self):
+        """
+        What to do if the trash gets hit by the blaster
+        """
+        self.game.hits += 1
+        if self.size >= 2:
+            self.split()
+        self.destroy()
 
 
 # Offset for calculating items relative to John Green Bot
@@ -243,7 +266,8 @@ class Specimen:
         self.INTERSIZE = 15
 
         self.inputLayer = np.zeros((self.NINPUTS, self.INTERSIZE))
-        self.interLayers = np.zeros((self.INTERSIZE, self.INTERSIZE, self.NINTER))
+        self.interLayers = np.zeros(
+            (self.INTERSIZE, self.INTERSIZE, self.NINTER))
         self.outputLayer = np.zeros((self.INTERSIZE, self.NOUTPUTS))
 
         self.inputBias = np.zeros((self.INTERSIZE))
@@ -252,7 +276,6 @@ class Specimen:
 
         self.inputValues = np.zeros((self.NINPUTS))
         self.outputValues = np.zeros((self.NOUTPUTS))
-
 
     def save(self, filename):
         fs = open(filename, "w")
@@ -351,11 +374,14 @@ class Specimen:
         """
         john_green_bot = game.john_green_bot
 
-        offsets = {a: self.min_offset(john_green_bot.position, a.position) for a in game.trash_list}
+        offsets = {a: self.min_offset(
+            john_green_bot.position, a.position) for a in game.trash_list}
 
-        trash_list = sorted(game.trash_list, key=lambda a: offsets[a].length_squared())
+        trash_list = sorted(
+            game.trash_list, key=lambda a: offsets[a].length_squared())
         visible_trash = []
-        if len(trash_list) > 5: visible_trash = trash_list[0:4]
+        if len(trash_list) > 5:
+            visible_trash = trash_list[0:4]
 
         # Get all the trash and add them as inputs to the neural network
         for i in range(len(visible_trash)):
@@ -376,7 +402,9 @@ class Specimen:
         # Actually do the recommended actions
         john_green_bot.moveDirection.x = self.outputValues[0]
         john_green_bot.moveDirection.y = self.outputValues[1]
-        john_green_bot.rotation = -math.degrees(math.atan2(self.outputValues[3], self.outputValues[2]))
+        john_green_bot.rotation = - \
+            math.degrees(math.atan2(
+                self.outputValues[3], self.outputValues[2]))
         john_green_bot.is_blasting = self.outputValues[4] > 0.5
 
 
@@ -391,10 +419,14 @@ def get_user_move_direction(ship):
 
     keys = pygame.key.get_pressed()
 
-    if (keys[K_w]): direction.y -= 1
-    if (keys[K_s]): direction.y += 1
-    if (keys[K_a]): direction.x -= 1
-    if (keys[K_d]): direction.x += 1
+    if (keys[K_w]):
+        direction.y -= 1
+    if (keys[K_s]):
+        direction.y += 1
+    if (keys[K_a]):
+        direction.x -= 1
+    if (keys[K_d]):
+        direction.x += 1
 
     return direction
 
@@ -407,10 +439,14 @@ def get_user_shoot(ship):
 
 def wrap_coords(point):
     dim = (800, 800)
-    while point.x < 0: point.x += dim[0]
-    while point.x > dim[0]: point.x -= dim[0]
-    while point.y < 0: point.y += dim[1]
-    while point.y > dim[1]: point.y -= dim[1]
+    while point.x < 0:
+        point.x += dim[0]
+    while point.x > dim[0]:
+        point.x -= dim[0]
+    while point.y < 0:
+        point.y += dim[1]
+    while point.y > dim[1]:
+        point.y -= dim[1]
     return point
 
 
@@ -448,10 +484,14 @@ class TrashBlaster:
         800 by 800 pixel game board, then move it to the opposite end.
         """
         dim = (800, 800)
-        while point.x < 0: point.x += dim[0]
-        while point.x > dim[0]: point.x -= dim[0]
-        while point.y < 0: point.y += dim[1]
-        while point.y > dim[1]: point.y -= dim[1]
+        while point.x < 0:
+            point.x += dim[0]
+        while point.x > dim[0]:
+            point.x -= dim[0]
+        while point.y < 0:
+            point.y += dim[1]
+        while point.y > dim[1]:
+            point.y -= dim[1]
         return point
 
     def run(self, specimen=None, doRender=True):
@@ -528,10 +568,12 @@ class TrashBlaster:
         if self.specimen:
             self.specimen.apply_input(self)
         else:
-            self.john_green_bot.moveDirection = get_user_move_direction(self.john_green_bot)
-            self.john_green_bot.rotation = get_user_rotation(self.john_green_bot)
-            self.john_green_bot.is_blasting = get_user_shoot(self.john_green_bot)
-
+            self.john_green_bot.moveDirection = get_user_move_direction(
+                self.john_green_bot)
+            self.john_green_bot.rotation = get_user_rotation(
+                self.john_green_bot)
+            self.john_green_bot.is_blasting = get_user_shoot(
+                self.john_green_bot)
 
     def update(self, dt):
         """
@@ -722,7 +764,8 @@ if __name__ == "__main__":
 
         # Sort the specimen by their score and keep only the top half.
         half_size = gen_size // 2
-        generation = sorted(specimen_score_map, key=lambda k: specimen_score_map[k], reverse=True)[0:half_size - 1]
+        generation = sorted(
+            specimen_score_map, key=lambda k: specimen_score_map[k], reverse=True)[0:half_size - 1]
 
         # Initialize an interation variable because the next few cells may be run many times.
         iteration = 0
@@ -766,21 +809,22 @@ if __name__ == "__main__":
 
                 # Sort the specimen by their score and keep only the top half.
                 generation = sorted(specimen_score_map, key=lambda k: specimen_score_map[k], reverse=True)[
-                             0:half_size - 1]
+                    0:half_size - 1]
 
                 # Find the mean-average of the scores of all reproducers (i.e., the top half of
                 # all specimen)
-                average_of_reproducers = sum(sorted(specimen_score_map.values(), reverse=True)[0:half_size]) / half_size
+                average_of_reproducers = sum(sorted(specimen_score_map.values(), reverse=True)[
+                                             0:half_size]) / half_size
 
                 # Print the statistics
                 print('ITERATION {}'.format(iteration))
                 print('\tAverage score of all specimen: {}'.format(average_of_all))
-                print('\tAverage score of reproducers: {}'.format(average_of_reproducers))
+                print('\tAverage score of reproducers: {}'.format(
+                    average_of_reproducers))
                 print('\tScore of the video-specimen: {}'.format(example_score))
 
         except KeyboardInterrupt:
             exit()
-
 
     elif mode == "playback":
         specimen = Specimen()
