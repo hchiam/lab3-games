@@ -37,7 +37,7 @@ This mode allows you to play **Trash Blaster** yourself, to test your skill. Mov
 
 There are no flags applicable to this mode.
 
-Example: `python3 trash_blasher.py play`
+Example: `python3 trash_blaster.py play`
 
 ### `learn` mode
 
